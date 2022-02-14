@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Технологии{% endblock %}
+{% block content %}
+{% comment %} Колонки с отступом сверху и снизу {% endcomment %}
+<style type="text/css">
+    article {
+        background: #fc0;
+        padding: 50px;
+    }
+    TD.rightcol {
+        width: 20px; /* Ширина правой колонки с рисунком */
+        vertical-align: top; /* Выравнивание по верхнему краю */
+       }
+</style>
+<article>
+    <div class="row">
+    <h1>Вот что я умею</h1>
+    {% comment %}
+        Боковой блок со списком технологий 
+        Займет всю ширину блока на мобильном
+        и 25% при размерах экрана ≥768px
+    {% endcomment %}
+    <aside class="col-12 col-md-3">
+        <ul style="font-family:Arial, sans-serif; font-size:200%" align="justify">
+        <li class="list-group-item" style="background: #fc0;" >
+            <b>Python</b>
+        </li>
+        <hr>
+        <li class="list-group-item" style="background: #fc0;">
+            <b>Django</b>
+        </li>
+        <hr>
+        <li class="list-group-item" style="background: #fc0;">
+            <b>SQL</b>
+        </li>
+        <hr>
+        <li class="list-group-item" style="background: #fc0;">
+            <b>HTML и CSS</b>
+        </li>
+        <hr>
+        <li class="list-group-item" style="background: #fc0;">
+            <b>Excel и VBA</b>
+        </li>
+        <hr>
+        <li class="list-group-item" style="background: #fc0;">
+            <b>VSCode и Git</b>
+        </li>
+        </ul>
+    </aside>
+    {% comment %}
+        Статья  
+        Займет всю ширину блока на мобильном
+        и 75% при размерах экрана ≥768px
+    {% endcomment %}
+    <div class="col-12 col-md-9" style="font-family:Arial, sans-serif; font-size:160%" align="justify">
+    <center><h3><u>Мой первый проект на Django: Социальная сеть блогеров или SOSBLOG</u></h3></center>    
+    <table width="100%" cellspacing="0" cellpadding="0">
+        <tr> 
+            <td valign="top">
+                <ul>
+                    <li>
+                        Это сайт, на котором можно создать свою страницу и добавлять записи. Если зайти на страницу автора, то можно посмотреть все записи автора.
+                    </li>
+                    <li>
+                        Пользователи смогут заходить на чужие страницы, подписываться на авторов и комментировать их записи.
+                    </li>
+                    <li>
+                        Автор уже может выбрать имя и уникальный адрес для своей страницы. Дизайн пока что самый простой.
+                    </li>
+                    <li>
+                        Возможно нужно будет реализовать возможность модерировать записи и блокировать пользователей, если начнут присылать спам.
+                    </li>
+                    <li>
+                        Записи можно отправить в сообщество и посмотреть там записи разных авторов.
+                    </li>
+                </ul>
+                <p>
+                Язык разработки: Python.
+                </p>
+                <p>
+                 Django версии 2.2.19.
+                </p>
+                <p>
+                База данных: db.sqlite3.
+                </p>
+            </td>
+            <td class="rightcol">
+                <img src="{% static 'img/prog.png' %}" width="600" height="710" vspace="5" hspace="30">
+                <center><font size="4">Я офигенный программист!</font></center>
+            </td>
+        </tr>
+    </table>
+    </div>
+</article>
+{% endblock %} 

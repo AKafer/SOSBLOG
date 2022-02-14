@@ -1,0 +1,10 @@
+<footer class="border-top text-center py-3">
+{% if 'author' in request.path_info or 'tech' in request.path_info %}
+<style type="text/css">
+  body {
+      background: #fc0;
+  }
+</style>
+{% endif %}
+        <p>© {{ year }} Copyright <span style="color:red">Ya</span>tube</p>
+</footer>

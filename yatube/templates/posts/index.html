@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}Последние обновления на сайте{% endblock %}
+{% block content %}
+{% load thumbnail %}
+{% load cache %}
+{% cache 20 index_page %}
+  <h1>Последние обновления на сайте</h1>
+  {% include 'includes/switcher.html' %}
+  {% for post in page_obj %}
+    <article>
+        <ul >
+          <li>
+            Автор: {{ post.author.get_full_name }} - {{ post.author.get_username }} 
+            <span>(<a href="{% url 'space_posts:profile' post.author.get_username %}" target="_blank">посты пользователя {{ post.author.get_username }}</a>)</span>
+          </li>
+          <li>
+              Дата публикации: {{ post.pub_date|date:"d E Y" }}
+          </li>
+        </ul>
+        {% thumbnail post.image "900x339" crop="center" upscale=True as im %}
+          <img class="card-img my-2" src="{{ im.url }}">
+        {% endthumbnail %}
+        <p>{{ post.text }}</p>
+        <p><a href="{{ post.get_absolute_url }}" target="_blank">подробная информация </a></p>  
+        {% if post.group is null %}
+          <p> Нет группы </p>
+        {% else %}       
+            <a href="{% url 'space_posts:group_list' post.group.slug %}" target="_blank">все записи группы: {{ post.group }}</a>
+        {% endif%}
+    </article>
+    {% if not forloop.last %}<hr>{% endif %}
+  {% endfor %}
+{% endcache %}
+{% include 'includes/paginator.html' %}
+{% endblock %} 
