@@ -304,5 +304,3 @@ class PostCreateUpdateFormTests(TestCase):
             PostCreateUpdateFormTests.post1,
             response.context['page_obj']
         )
-
-
