@@ -149,6 +149,7 @@ class PostCreateUpdateFormTests(TestCase):
         post_count = Post.objects.count()
         # меняем группу для редактированного поста
         pk_old_group = Post.objects.latest('pub_date').group.pk
+        author = Post.objects.latest('pub_date').author
         old_group_slug = Post.objects.latest('pub_date').group.slug
         if pk_old_group == PostCreateUpdateFormTests.group1.pk:
             pk_new_group = PostCreateUpdateFormTests.group2.pk
@@ -173,7 +174,7 @@ class PostCreateUpdateFormTests(TestCase):
         )
         self.assertEqual(Post.objects.count(), post_count)
         post_edited = Post.objects.latest('pub_date')
-        self.assertEqual(post_edited.author, PostCreateUpdateFormTests.user)
+        self.assertEqual(post_edited.author, author)
         self.assertEqual(post_edited.text, 'Текст редактирован')
         self.assertEqual(post_edited.group.pk, pk_new_group)
         response = self.authorized_client.get(reverse(
@@ -267,7 +268,7 @@ class PostCreateUpdateFormTests(TestCase):
         """Авторизованный пользователь может подписываться на
         других пользователей и удалять их из подписок.
         Новая запись пользователя появляется в ленте тех,
-        кто на него подписан и не появляется в ленте тех, кто не подписан.
+        кто на него подписан.
          """
         follow_count = Follow.objects.count()
         author = PostCreateUpdateFormTests.user1
@@ -303,3 +304,5 @@ class PostCreateUpdateFormTests(TestCase):
             PostCreateUpdateFormTests.post1,
             response.context['page_obj']
         )
+
+
