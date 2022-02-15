@@ -1,6 +1,6 @@
 from django.test import Client, TestCase
 from django.urls import reverse
-from ..models import Group, Post, User, Comment
+from ..models import Group, Post, User, Comment, Follow
 from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, override_settings
@@ -16,6 +16,8 @@ class PostCreateUpdateFormTests(TestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.user = User.objects.create_user(username='auth')
+        cls.user1 = User.objects.create_user(username='auth1')
+        cls.user2 = User.objects.create_user(username='auth2')
         cls.group1 = Group.objects.create(
             title='Группа-1',
             slug='test-slug-1',
@@ -31,10 +33,15 @@ class PostCreateUpdateFormTests(TestCase):
             text='Тестовая',
             group=cls.group1,
         )
-        cls.comment = Comment.objects.create(
-            author=cls.user,
-            text='Первый',
-            post=cls.post,
+        cls.post1 = Post.objects.create(
+            author=cls.user1,
+            text='Тестовая1',
+            group=cls.group1,
+        )
+        cls.post2 = Post.objects.create(
+            author=cls.user2,
+            text='Тестовая2',
+            group=cls.group1,
         )
 
     @classmethod
@@ -255,3 +262,44 @@ class PostCreateUpdateFormTests(TestCase):
         Post.objects.latest('pub_date').delete()
         response = self.authorized_client.get(reverse('space_posts:posts'))
         self.assertEqual(cashe_content, response.content)
+
+    def test_follow_create_delete(self):
+        """Авторизованный пользователь может подписываться на
+        других пользователей и удалять их из подписок.
+        Новая запись пользователя появляется в ленте тех,
+        кто на него подписан и не появляется в ленте тех, кто не подписан.
+         """
+        follow_count = Follow.objects.count()
+        author = PostCreateUpdateFormTests.user1
+        response = self.authorized_client.get(
+            reverse('space_posts:profile_follow',
+                    kwargs={'username': author})
+        )
+        response
+        self.assertEqual(Follow.objects.count(), follow_count + 1)
+        follow_created = Follow.objects.latest('-id')
+        self.assertEqual(follow_created.author, author)
+        self.assertEqual(follow_created.user, PostCreateUpdateFormTests.user)
+        response = self.authorized_client.get(
+            reverse('space_posts:follow_index')
+        )
+        self.assertIn(
+            PostCreateUpdateFormTests.post1,
+            response.context['page_obj']
+        )
+
+        response = self.authorized_client.get(
+            reverse('space_posts:profile_unfollow',
+                    kwargs={'username': author})
+        )
+        response
+        self.assertEqual(Follow.objects.count(), follow_count)
+
+        self.authorized_client.force_login(PostCreateUpdateFormTests.user2)
+        response = self.authorized_client.get(
+            reverse('space_posts:follow_index')
+        )
+        self.assertNotIn(
+            PostCreateUpdateFormTests.post1,
+            response.context['page_obj']
+        )
