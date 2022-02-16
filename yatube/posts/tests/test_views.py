@@ -1,12 +1,15 @@
 from django.test import Client, TestCase
 from django.urls import reverse
 from ..models import Group, Post, User
+from ..views import N_EXEMPLE
 
 
 class PostPagesTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        # число постов
+        cls.N_POSTS_ALL: int = 12
         # Создаем двух юзеров и две группы
         cls.user1 = User.objects.create_user(username='Толстой')
         cls.user2 = User.objects.create_user(username='Пушкин')
@@ -25,7 +28,7 @@ class PostPagesTests(TestCase):
             'Толстой' if i < 7 else 'Пушкин',
             f'Текст поста {i}',
             'Группа-2' if i % 2 == 0 else 'Группа-1')
-            for i in range(1, 13, 1)
+            for i in range(1, cls.N_POSTS_ALL + 1, 1)
         ]
         # 12 новых объектов
         objs = [
@@ -34,14 +37,11 @@ class PostPagesTests(TestCase):
                 text=f'Текст поста {i}',
                 group=cls.group2 if i % 2 == 0 else cls.group1,
             )
-            for i in range(1, 13, 1)
+            for i in range(1, cls.N_POSTS_ALL + 1, 1)
         ]
         Post.objects.bulk_create(objs=objs)
-        # контрольные константы
-        cls.N_posts_home_first: int = 10
-        cls.N_posts_home_second: int = 2
-        cls.N_posts_group_list_first: int = 6
-        cls.N_posts_profile_first: int = 6
+        cls.N_POSTS_GROUPLIST = Post.objects.filter(group=cls.group1).count()
+        cls.N_POSTS_PROFILE = Post.objects.filter(author=cls.user1).count()
 
     def setUp(self):
         self.authorized_client = Client()
@@ -79,17 +79,18 @@ class PostPagesTests(TestCase):
         response = self.authorized_client.get(reverse('space_posts:posts'))
         self.assertEqual(
             len(response.context['page_obj']),
-            PostPagesTests.N_posts_home_first
+            N_EXEMPLE
         )
 
     def test_home_second_page_contains_three_records(self):
         """Проверка пагинатора на второй странице страницы index"""
+        N_POSTS_HOME_SECOND = PostPagesTests.N_POSTS_ALL - N_EXEMPLE
         response = self.authorized_client.get(reverse(
             'space_posts:posts') + '?page=2'
         )
         self.assertEqual(
             len(response.context['page_obj']),
-            PostPagesTests.N_posts_home_second
+            N_POSTS_HOME_SECOND
         )
 
     def test_group_list_first_page_contains_six_records(self):
@@ -100,7 +101,7 @@ class PostPagesTests(TestCase):
         )
         self.assertEqual(
             len(response.context['page_obj']),
-            PostPagesTests.N_posts_group_list_first
+            PostPagesTests.N_POSTS_GROUPLIST
         )
 
     def test_profile_first_page_contains_six_records(self):
@@ -111,7 +112,7 @@ class PostPagesTests(TestCase):
         )
         self.assertEqual(
             len(response.context['page_obj']),
-            PostPagesTests.N_posts_profile_first
+            PostPagesTests.N_POSTS_PROFILE
         )
 
     def test_home_pages_show_correct_context(self):
@@ -169,6 +170,31 @@ class PostPagesTests(TestCase):
         )
         control_list = [
             x for x in PostPagesTests.control_list if x[0] == control_name
+        ]
+        n_post: int = 0
+        for resp_context in response.context['page_obj']:
+            post = (
+                str(resp_context.author),
+                resp_context.text,
+                str(resp_context.group),
+            )
+            self.assertIn(post, control_list)
+            n_post += 1
+        self.assertEqual(n_post, len(control_list))
+
+    def test_follow_index_show_correct_context(self):
+        """Шаблон follow сформирован с правильным контекстом."""
+        author = PostPagesTests.user2
+        response = self.authorized_client.get(
+            reverse('space_posts:profile_follow',
+                    kwargs={'username': author})
+        )
+        response = self.authorized_client.get(
+            reverse('space_posts:follow_index')
+        )
+        control_list = [
+            x for x in PostPagesTests.control_list if x[0]
+            == author.username
         ]
         n_post: int = 0
         for resp_context in response.context['page_obj']:

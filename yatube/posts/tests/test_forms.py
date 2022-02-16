@@ -43,6 +43,10 @@ class PostCreateUpdateFormTests(TestCase):
             text='Тестовая2',
             group=cls.group1,
         )
+        cls.user2_follow_user = Follow.objects.create(
+            user=cls.user2,
+            author=cls.user,
+        )
 
     @classmethod
     def tearDownClass(cls):
@@ -206,10 +210,11 @@ class PostCreateUpdateFormTests(TestCase):
         """Авторизованный юзер создает комментарий через форму на странице
         поста. Комментарий появляется на странице поста."""
         comment_count = Comment.objects.count()
-        pk_post = Post.objects.latest('pub_date').pk
-        new_comment = 'Второй комментарий'
+        post = Post.objects.latest('pub_date')
+        pk_post = post.pk
+        new_comment_text = 'Второй комментарий'
         form_data = {
-            'text': new_comment,
+            'text': new_comment_text,
         }
         response = self.authorized_client.post(
             reverse('space_posts:add_comment',
@@ -218,10 +223,12 @@ class PostCreateUpdateFormTests(TestCase):
             follow=True,
         )
         self.assertEqual(Comment.objects.count(), comment_count + 1)
-        list_comment = []
-        for comment in response.context['comments']:
-            list_comment.append(str(comment))
-        self.assertIn(new_comment, list_comment)
+        new_comment = Comment.objects.latest('created')
+        self.assertEqual(new_comment.text, new_comment_text)
+        self.assertEqual(new_comment.author, PostCreateUpdateFormTests.user)
+        self.assertEqual(new_comment.post, post)
+        list_comment = [str(x) for x in response.context['comments']]
+        self.assertIn(new_comment_text, list_comment)
 
     def test_comment_add_non_user(self):
         """Не авторизованный юзер не может создать комментарий, комментарий
@@ -240,7 +247,6 @@ class PostCreateUpdateFormTests(TestCase):
             data=form_data,
             follow=True
         )
-        response
         self.assertEqual(Comment.objects.count(), comment_count)
         response = self.guest_client.post(
             reverse(
@@ -264,21 +270,23 @@ class PostCreateUpdateFormTests(TestCase):
         response = self.authorized_client.get(reverse('space_posts:posts'))
         self.assertEqual(cashe_content, response.content)
 
-    def test_follow_create_delete(self):
-        """Авторизованный пользователь может подписываться на
-        других пользователей и удалять их из подписок.
-        Новая запись пользователя появляется в ленте тех,
-        кто на него подписан.
-         """
-        follow_count = Follow.objects.count()
+    def test_follow_create(self):
+        """Авторизованный пользователь может однократно подписываться на
+        других пользователей. Посты подписанных
+        авторов добавляются страницы записи избранных авторов.
+        """
+        follow_count_start = Follow.objects.count()
         author = PostCreateUpdateFormTests.user1
         response = self.authorized_client.get(
             reverse('space_posts:profile_follow',
                     kwargs={'username': author})
         )
-        response
-        self.assertEqual(Follow.objects.count(), follow_count + 1)
-        follow_created = Follow.objects.latest('-id')
+        response = self.authorized_client.get(
+            reverse('space_posts:profile_follow',
+                    kwargs={'username': author})
+        )
+        self.assertEqual(Follow.objects.count(), follow_count_start + 1)
+        follow_created = Follow.objects.latest('id')
         self.assertEqual(follow_created.author, author)
         self.assertEqual(follow_created.user, PostCreateUpdateFormTests.user)
         response = self.authorized_client.get(
@@ -289,18 +297,47 @@ class PostCreateUpdateFormTests(TestCase):
             response.context['page_obj']
         )
 
+    def test_follow_delete(self):
+        """Авторизованный пользователь может отписаться от автора.
+        Посты этого автора удаляются со страницы записи избранных авторов.
+        """
+        follow_count_start = Follow.objects.count()
+        author = PostCreateUpdateFormTests.user
+        self.authorized_client.force_login(PostCreateUpdateFormTests.user2)
         response = self.authorized_client.get(
             reverse('space_posts:profile_unfollow',
                     kwargs={'username': author})
         )
         response
-        self.assertEqual(Follow.objects.count(), follow_count)
-
-        self.authorized_client.force_login(PostCreateUpdateFormTests.user2)
+        self.assertEqual(Follow.objects.count(), follow_count_start - 1)
         response = self.authorized_client.get(
             reverse('space_posts:follow_index')
         )
         self.assertNotIn(
-            PostCreateUpdateFormTests.post1,
+            PostCreateUpdateFormTests.post,
             response.context['page_obj']
         )
+
+    def test_new_post_appear_in_follow(self):
+        """Новая запись пользователя появляется в ленте тех,
+        кто на него подписан и не появляется в ленте тех, кто не подписан.
+        """
+        form_data = {
+            'text': 'Проверка подписки',
+        }
+        response = self.authorized_client.post(
+            reverse('space_posts:post_create'),
+            data=form_data,
+            follow=True,
+        )
+        post_created = Post.objects.latest('pub_date')
+        self.authorized_client.force_login(PostCreateUpdateFormTests.user2)
+        response = self.authorized_client.get(
+            reverse('space_posts:follow_index')
+        )
+        self.assertIn(post_created, response.context['page_obj'])
+        self.authorized_client.force_login(PostCreateUpdateFormTests.user1)
+        response = self.authorized_client.get(
+            reverse('space_posts:follow_index')
+        )
+        self.assertNotIn(post_created, response.context['page_obj'])

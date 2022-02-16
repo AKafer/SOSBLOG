@@ -3,6 +3,9 @@ from ..models import Group, Post, User
 from http import HTTPStatus
 
 
+N_EXEMPLE: int = 10
+
+
 class URLTests(TestCase):
     @classmethod
     def setUpClass(cls):
@@ -24,6 +27,7 @@ class URLTests(TestCase):
         )
         cls.templates_url_names = {
             '/': 'posts/index.html',
+            '/follow/': 'posts/follow.html',
             '/group/test-slug/': 'posts/group_list.html',
             '/profile/auth/': 'posts/profile.html',
             f'/posts/{cls.post.pk}/': 'posts/post_detail.html',
@@ -42,6 +46,7 @@ class URLTests(TestCase):
             '/auth/logout/': 'users/logged_out.html',
         }
         cls.except_nonuser_list = [
+            '/follow/',
             '/create/',
             f'/posts/{URLTests.post.pk}/edit/',
             '/auth/password_change/',
@@ -72,7 +77,7 @@ class URLTests(TestCase):
                     response = self.guest_client.get(page)
                     self.assertEqual(response.status_code, HTTPStatus.OK)
 
-    def test_urls_uses_correct_template_edit(self):
+    def test_urls_uses_correct_template_auth_user(self):
         """URL-адрес /posts/post_id/edit/ использует
         соответствующий шаблон для авторизованного пользователя.
         """
@@ -118,6 +123,10 @@ class URLTests(TestCase):
         self.assertRedirects(response, redirect_page)
 
     def test_unexpected_page_check(self):
-        """Неизвестная страница дает ошибку 404."""
-        response = self.guest_client.get('/unexpected_page/')
+        """Неизвестная страница дает ошибку 404, и используется кастомный
+        шаблон"""
+        address = '/unexpected_page/'
+        response = self.guest_client.get(address)
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
+        response = self.guest_client.get(address)
+        self.assertTemplateUsed(response, 'core/404.html')

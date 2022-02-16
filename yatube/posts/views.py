@@ -4,6 +4,7 @@ from django.core.paginator import Paginator
 from .forms import PostForm, CommentForm
 from django.contrib.auth.decorators import login_required
 
+
 N_EXEMPLE: int = 10
 
 
@@ -14,6 +15,7 @@ def index(request):
     page_obj = paginator.get_page(page_number)
     context = {
         'page_obj': page_obj,
+        'index': True
     }
     return render(request, 'posts/index.html', context)
 
@@ -32,7 +34,7 @@ def group_posts(request, slug):
 
 
 def profile(request, username):
-    author = User.objects.get(username=username)
+    author = get_object_or_404(User, username=username)
     posts = Post.objects.filter(
         author=author).select_related('author', 'group')
     number_posts = posts.count()
@@ -41,14 +43,8 @@ def profile(request, username):
     page_obj = paginator.get_page(page_number)
     following = False
     if str(request.user) != 'AnonymousUser':
-        following = False
-        user_request = request.user
-        follow_list = user_request.follower.all()
-        author_list = []
-        for follow in follow_list:
-            author_list.append(follow.author)
-        if author in author_list:
-            following = True
+        author_list = [x.author for x in request.user.follower.all()]
+        following = (author in author_list)
     context = {
         'username': username,
         'number_posts': number_posts,
@@ -128,42 +124,35 @@ def add_comment(request, post_id):
 
 @login_required
 def follow_index(request):
-    user = User.objects.get(username=request.user)
-    follow_list = user.follower.all()
-    author_list = []
-    for follow in follow_list:
-        author_list.append(follow.author)
-    post_list = Post.objects.filter(author__in=author_list)
+    user = get_object_or_404(User, username=request.user)
+    follow_list = user.follower.all().values('author')
+    post_list = Post.objects.filter(author__in=follow_list)
     paginator = Paginator(post_list, N_EXEMPLE)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     context = {
         'page_obj': page_obj,
+        'follow': True
     }
     return render(request, 'posts/follow.html', context)
 
 
 @login_required
 def profile_follow(request, username):
-    author = User.objects.get(username=username)
-    user_request = request.user
-    follow_list = user_request.follower.all()
-    author_list = []
-    for follow in follow_list:
-        author_list.append(follow.author)
-    if request.user == author or author in author_list:
-        return redirect('/follow/')
-    Follow.objects.create(
-        user=request.user,
-        author=author
-    )
+    author = get_object_or_404(User, username=username)
+    user = request.user
+    if user != author:
+        Follow.objects.get_or_create(
+            user=request.user,
+            author=author
+        )
     return redirect('/follow/')
 
 
 @login_required
 def profile_unfollow(request, username):
     user = request.user
-    author = User.objects.get(username=username)
+    author = get_object_or_404(User, username=username)
     follow_del = user.follower.get(author=author)
     follow_del.delete()
     return redirect('/follow/')
