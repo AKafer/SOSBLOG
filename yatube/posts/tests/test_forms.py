@@ -101,7 +101,7 @@ class PostCreateUpdateFormTests(TestCase):
         )
 
         post_count = Post.objects.count()
-        pk_group = PostCreateUpdateFormTests.group1.pk
+        pk_group = self.group1.pk
         form_data = {
             'text': 'Текст из формы создания',
             'group': pk_group,
@@ -114,11 +114,11 @@ class PostCreateUpdateFormTests(TestCase):
         )
         self.assertRedirects(response, reverse(
             'space_posts:profile',
-            kwargs={'username': PostCreateUpdateFormTests.user.username})
+            kwargs={'username': self.user.username})
         )
         self.assertEqual(Post.objects.count(), post_count + 1)
         post_created = Post.objects.latest('pub_date')
-        self.assertEqual(post_created.author, PostCreateUpdateFormTests.user)
+        self.assertEqual(post_created.author, self.user)
         self.assertEqual(post_created.text, 'Текст из формы создания')
         self.assertEqual(post_created.group.pk, pk_group)
         self.assertEqual(post_created.image, 'posts/small.gif')
@@ -155,10 +155,10 @@ class PostCreateUpdateFormTests(TestCase):
         pk_old_group = Post.objects.latest('pub_date').group.pk
         author = Post.objects.latest('pub_date').author
         old_group_slug = Post.objects.latest('pub_date').group.slug
-        if pk_old_group == PostCreateUpdateFormTests.group1.pk:
-            pk_new_group = PostCreateUpdateFormTests.group2.pk
+        if pk_old_group == self.group1.pk:
+            pk_new_group = self.group2.pk
         else:
-            pk_new_group = PostCreateUpdateFormTests.group1.pk
+            pk_new_group = self.group1.pk
         pk_post = Post.objects.latest('pub_date').pk
         form_data = {
             'text': 'Текст редактирован',
@@ -193,7 +193,7 @@ class PostCreateUpdateFormTests(TestCase):
         создать новый пост и комментарий.
          """
         post_count = Post.objects.count()
-        pk_group = PostCreateUpdateFormTests.group1.pk
+        pk_group = self.group1.pk
         form_data = {
             'text': 'Текст из формы создания',
             'group': pk_group,
@@ -225,7 +225,7 @@ class PostCreateUpdateFormTests(TestCase):
         self.assertEqual(Comment.objects.count(), comment_count + 1)
         new_comment = Comment.objects.latest('created')
         self.assertEqual(new_comment.text, new_comment_text)
-        self.assertEqual(new_comment.author, PostCreateUpdateFormTests.user)
+        self.assertEqual(new_comment.author, self.user)
         self.assertEqual(new_comment.post, post)
         list_comment = [str(x) for x in response.context['comments']]
         self.assertIn(new_comment_text, list_comment)
@@ -276,7 +276,7 @@ class PostCreateUpdateFormTests(TestCase):
         авторов добавляются страницы записи избранных авторов.
         """
         follow_count_start = Follow.objects.count()
-        author = PostCreateUpdateFormTests.user1
+        author = self.user1
         response = self.authorized_client.get(
             reverse('space_posts:profile_follow',
                     kwargs={'username': author})
@@ -288,12 +288,12 @@ class PostCreateUpdateFormTests(TestCase):
         self.assertEqual(Follow.objects.count(), follow_count_start + 1)
         follow_created = Follow.objects.latest('id')
         self.assertEqual(follow_created.author, author)
-        self.assertEqual(follow_created.user, PostCreateUpdateFormTests.user)
+        self.assertEqual(follow_created.user, self.user)
         response = self.authorized_client.get(
             reverse('space_posts:follow_index')
         )
         self.assertIn(
-            PostCreateUpdateFormTests.post1,
+            self.post1,
             response.context['page_obj']
         )
 
@@ -302,8 +302,8 @@ class PostCreateUpdateFormTests(TestCase):
         Посты этого автора удаляются со страницы записи избранных авторов.
         """
         follow_count_start = Follow.objects.count()
-        author = PostCreateUpdateFormTests.user
-        self.authorized_client.force_login(PostCreateUpdateFormTests.user2)
+        author = self.user
+        self.authorized_client.force_login(self.user2)
         response = self.authorized_client.get(
             reverse('space_posts:profile_unfollow',
                     kwargs={'username': author})
@@ -314,7 +314,7 @@ class PostCreateUpdateFormTests(TestCase):
             reverse('space_posts:follow_index')
         )
         self.assertNotIn(
-            PostCreateUpdateFormTests.post,
+            self.post,
             response.context['page_obj']
         )
 
@@ -331,12 +331,12 @@ class PostCreateUpdateFormTests(TestCase):
             follow=True,
         )
         post_created = Post.objects.latest('pub_date')
-        self.authorized_client.force_login(PostCreateUpdateFormTests.user2)
+        self.authorized_client.force_login(self.user2)
         response = self.authorized_client.get(
             reverse('space_posts:follow_index')
         )
         self.assertIn(post_created, response.context['page_obj'])
-        self.authorized_client.force_login(PostCreateUpdateFormTests.user1)
+        self.authorized_client.force_login(self.user1)
         response = self.authorized_client.get(
             reverse('space_posts:follow_index')
         )

@@ -84,7 +84,7 @@ class PostPagesTests(TestCase):
 
     def test_home_second_page_contains_three_records(self):
         """Проверка пагинатора на второй странице страницы index"""
-        N_POSTS_HOME_SECOND = PostPagesTests.N_POSTS_ALL - N_EXEMPLE
+        N_POSTS_HOME_SECOND = self.N_POSTS_ALL - N_EXEMPLE
         response = self.authorized_client.get(reverse(
             'space_posts:posts') + '?page=2'
         )
@@ -101,7 +101,7 @@ class PostPagesTests(TestCase):
         )
         self.assertEqual(
             len(response.context['page_obj']),
-            PostPagesTests.N_POSTS_GROUPLIST
+            self.N_POSTS_GROUPLIST
         )
 
     def test_profile_first_page_contains_six_records(self):
@@ -112,7 +112,7 @@ class PostPagesTests(TestCase):
         )
         self.assertEqual(
             len(response.context['page_obj']),
-            PostPagesTests.N_POSTS_PROFILE
+            self.N_POSTS_PROFILE
         )
 
     def test_home_pages_show_correct_context(self):
@@ -125,7 +125,7 @@ class PostPagesTests(TestCase):
                 resp_context.text,
                 str(resp_context.group),
             )
-            self.assertIn(post, PostPagesTests.control_list)
+            self.assertIn(post, self.control_list)
             n_post += 1
 
         response = self.authorized_client.get(reverse(
@@ -137,9 +137,9 @@ class PostPagesTests(TestCase):
                 resp_context.text,
                 str(resp_context.group),
             )
-            self.assertIn(post, PostPagesTests.control_list)
+            self.assertIn(post, self.control_list)
             n_post += 1
-        self.assertEqual(n_post, len(PostPagesTests.control_list))
+        self.assertEqual(n_post, len(self.control_list))
 
     def test_group_list_show_correct_context(self):
         """Шаблон group_list сформирован с правильным контекстом."""
@@ -148,7 +148,7 @@ class PostPagesTests(TestCase):
             kwargs={'slug': 'test-slug-1'})
         )
         control_list = [
-            x for x in PostPagesTests.control_list if x[2] == 'Группа-1'
+            x for x in self.control_list if x[2] == 'Группа-1'
         ]
         n_post: int = 0
         for resp_context in response.context['page_obj']:
@@ -169,7 +169,7 @@ class PostPagesTests(TestCase):
             kwargs={'username': control_name})
         )
         control_list = [
-            x for x in PostPagesTests.control_list if x[0] == control_name
+            x for x in self.control_list if x[0] == control_name
         ]
         n_post: int = 0
         for resp_context in response.context['page_obj']:
@@ -184,7 +184,7 @@ class PostPagesTests(TestCase):
 
     def test_follow_index_show_correct_context(self):
         """Шаблон follow сформирован с правильным контекстом."""
-        author = PostPagesTests.user2
+        author = self.user2
         response = self.authorized_client.get(
             reverse('space_posts:profile_follow',
                     kwargs={'username': author})
@@ -193,7 +193,7 @@ class PostPagesTests(TestCase):
             reverse('space_posts:follow_index')
         )
         control_list = [
-            x for x in PostPagesTests.control_list if x[0]
+            x for x in self.control_list if x[0]
             == author.username
         ]
         n_post: int = 0

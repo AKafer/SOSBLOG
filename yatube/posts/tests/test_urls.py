@@ -48,7 +48,7 @@ class URLTests(TestCase):
         cls.except_nonuser_list = [
             '/follow/',
             '/create/',
-            f'/posts/{URLTests.post.pk}/edit/',
+            f'/posts/{cls.post.pk}/edit/',
             '/auth/password_change/',
             '/auth/password_change/done/'
         ]
@@ -60,15 +60,15 @@ class URLTests(TestCase):
 
     def test_status_code_user(self):
         """Проверка доступности страниц для авторизованного пользователя."""
-        for address in URLTests.templates_url_names:
+        for address in self.templates_url_names:
             with self.subTest(address=address):
                 response = self.authorized_client.get(address)
                 self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_status_code_non_user(self):
         """Проверка доступности страниц для неавторизованного пользователя."""
-        for page in URLTests.templates_url_names:
-            if page in URLTests.except_nonuser_list:
+        for page in self.templates_url_names:
+            if page in self.except_nonuser_list:
                 with self.subTest(page=page):
                     response = self.guest_client.get(page)
                     self.assertEqual(response.status_code, HTTPStatus.FOUND)
@@ -81,7 +81,7 @@ class URLTests(TestCase):
         """URL-адрес /posts/post_id/edit/ использует
         соответствующий шаблон для авторизованного пользователя.
         """
-        for address, template in URLTests.templates_url_names.items():
+        for address, template in self.templates_url_names.items():
             with self.subTest(address=address):
                 response = self.authorized_client.get(address)
                 self.assertTemplateUsed(response, template)
@@ -90,8 +90,8 @@ class URLTests(TestCase):
         """URL-адрес использует соответствующий шаблон
         для неавторизованного пользователя.
         """
-        for address, template in URLTests.templates_url_names.items():
-            if address not in URLTests.except_nonuser_list:
+        for address, template in self.templates_url_names.items():
+            if address not in self.except_nonuser_list:
                 with self.subTest(address=address):
                     response = self.guest_client.get(address)
                     self.assertTemplateUsed(response, template)
@@ -102,8 +102,8 @@ class URLTests(TestCase):
         """
         dict_control = {
             '/create/': '/auth/login/?next=/create/',
-            f'/posts/{URLTests.post.pk}/edit/':
-            f'/auth/login/?next=/posts/{URLTests.post.pk}/edit/',
+            f'/posts/{self.post.pk}/edit/':
+            f'/auth/login/?next=/posts/{self.post.pk}/edit/',
         }
         for address, redirect_page in dict_control.items():
             with self.subTest(address=address):
@@ -116,10 +116,10 @@ class URLTests(TestCase):
         на страницу просмотра поста.
         """
         response = self.authorized_client.get(
-            f'/posts/{URLTests.post1.pk}/edit/',
+            f'/posts/{self.post1.pk}/edit/',
             follow=True
         )
-        redirect_page = f'/posts/{URLTests.post1.pk}/'
+        redirect_page = f'/posts/{self.post1.pk}/'
         self.assertRedirects(response, redirect_page)
 
     def test_unexpected_page_check(self):

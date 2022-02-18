@@ -30,6 +30,9 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     '[::1]',
     'testserver',
+    'www.AKafer.pythonanywhere.com',
+    'AKafer.pythonanywhere.com',
+    '*',
 ]
 
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]

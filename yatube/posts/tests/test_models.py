@@ -19,8 +19,8 @@ class PostModelTest(TestCase):
 
     def test_models_have_correct_Str_name(self):
         """Проверяем, что у моделей Post, Group корректно работает __str__."""
-        post = PostModelTest.post
-        group = PostModelTest.group
+        post = self.post
+        group = self.group
         dict_equal = {
             post: post.text[:15],
             group: group.title
