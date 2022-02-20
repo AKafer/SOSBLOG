@@ -3,7 +3,7 @@
 {% block content %}
 {% load thumbnail %}
 {% load cache %}
-{% cache 2 index_page %}
+{% cache 60 index_page page_obj.number %}
   <h1>Последние обновления на сайте</h1>
   {% include 'includes/switcher.html' %}
   {% for post in page_obj %}
