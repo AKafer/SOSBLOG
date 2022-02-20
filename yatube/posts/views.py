@@ -4,7 +4,6 @@ from django.core.paginator import Paginator
 from .forms import PostForm, CommentForm
 from django.contrib.auth.decorators import login_required
 
-
 N_EXEMPLE: int = 10
 
 
@@ -43,8 +42,8 @@ def profile(request, username):
     page_obj = paginator.get_page(page_number)
     following = False
     if str(request.user) != 'AnonymousUser':
-        author_list = [x.author for x in request.user.follower.all()]
-        following = (author in author_list)
+        following = (Follow.objects.filter(user=request.user).filter(
+            author=author).exists())
     context = {
         'username': username,
         'number_posts': number_posts,
