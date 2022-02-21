@@ -11,7 +11,7 @@
         <ul >
           <li>
             Автор: {{ post.author.get_full_name }} - {{ post.author.get_username }} 
-            <span>(<a href="{% url 'space_posts:profile' post.author.get_username %}" target="_blank">посты пользователя {{ post.author.get_username }}</a>)</span>
+            <span>(<a href="{% url 'space_posts:profile' post.author.get_username %}">посты пользователя</a>)</span>
           </li>
           <li>
               Дата публикации: {{ post.pub_date|date:"d E Y" }}
@@ -21,11 +21,11 @@
           <img class="card-img my-2" src="{{ im.url }}">
         {% endthumbnail %}
         <p>{{ post.text }}</p>
-        <p><a href="{{ post.get_absolute_url }}" target="_blank">подробная информация </a></p>  
+        <p><a href="{{ post.get_absolute_url }}">подробная информация </a></p>
         {% if post.group is null %}
           <p> Нет группы </p>
         {% else %}       
-            <a href="{% url 'space_posts:group_list' post.group.slug %}" target="_blank">все записи группы: {{ post.group }}</a>
+            <a href="{% url 'space_posts:group_list' post.group.slug %}">все записи группы: {{ post.group }}</a>
         {% endif%}
     </article>
     {% if not forloop.last %}<hr>{% endif %}

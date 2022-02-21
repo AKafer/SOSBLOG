@@ -48,8 +48,13 @@
               Выйти
             </a>
           </li>
-          <li>
-            Пользователь: {{ user.username }}
+          <li class="nav-item">
+            <a
+                    class="nav-link {% if view_name  == 'space_posts:profile' %}active{% endif %}  link-light"
+              href="{% url 'space_posts:profile' user.username %}"
+            >
+              Пользователь: {{ user.username }}
+            </a>
           </li>
         {% else %}
           <li class="nav-item"> 

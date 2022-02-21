@@ -15,12 +15,14 @@
                   Отписаться
                 </a>
             {% else %}
+                {% if not user_is_author %}
                   <a
                     class="btn btn-lg btn-primary"
                     href="{% url 'space_posts:profile_follow' author.username %}" role="button"
                   >
                     Подписаться
                   </a>
+                {% endif %}
            {% endif %}
         </div>
         {% for post in page_obj %}
@@ -37,12 +39,12 @@
                     <img class="card-img my-2" src="{{ im.url }}">
                 {% endthumbnail %}
                 <p>{{ post.text }}</p>
-                <a href="{{ post.get_absolute_url }}" target="_blank">подробная информация</a>
+                <a href="{{ post.get_absolute_url }}">подробная информация</a>
             </article> 
             {% if post.group is null %}
                 <p> Нет группы </p>
             {% else %}
-                 <a href="{% url 'space_posts:group_list' post.group.slug %}" target="_blank">все записи группы {{ post.group.title }}</a>
+                 <a href="{% url 'space_posts:group_list' post.group.slug %}">все записи группы {{ post.group.title }}</a>
             {% endif%}   
             {% if not forloop.last %}<hr>{% endif %}
         {% endfor %} 

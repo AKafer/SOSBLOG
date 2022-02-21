@@ -12,7 +12,7 @@
             {% if post.group is not null %}   
               <li class="list-group-item">
                 Группа: {{ post.group }}
-                <p><a href="{% url 'space_posts:group_list' post.group.slug %}" target="_blank">все записи группы</a></p>
+                <p><a href="{% url 'space_posts:group_list' post.group.slug %}">все записи группы</a></p>
               </li>
               {% endif%} 
               <li class="list-group-item">
