@@ -46,7 +46,7 @@ python3 manage.py migrate
 ### Запустить проект:
 
 ```
-python3 manage.py runserver
+python manage.py runserver
 ```
 
 ## Стек технологий
