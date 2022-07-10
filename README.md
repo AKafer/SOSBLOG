@@ -26,8 +26,8 @@ cd SOSBLOG/
 ### Создать и активировать виртуальное окружение:
 
 ```
-python3 -m venv venv
-source venv/bin/activate
+python -m venv venv
+source venv/Scripts/activate
 ```
 
 ### Установить зависимости из файла requirements.txt:
