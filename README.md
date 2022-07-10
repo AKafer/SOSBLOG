@@ -40,7 +40,7 @@ pip install -r requirements.txt
 
 ```
 cd yatube
-python3 manage.py migrate
+python manage.py migrate
 ```
 
 ### Запустить проект:
