@@ -19,7 +19,7 @@
 ### Клонировать репозиторий и перейти в него в командной строке:
 
 ```
-git@github.com:AKafer/hw05_final.git
+git clone https://github.com/AKafer/SOSBLOG.git
 cd SOSBLOG/
 ```
 
