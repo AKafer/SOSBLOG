@@ -20,7 +20,7 @@
 
 ```
 git@github.com:AKafer/hw05_final.git
-cd hw05_final
+cd SOSBLOG/
 ```
 
 ### Создать и активировать виртуальное окружение:
